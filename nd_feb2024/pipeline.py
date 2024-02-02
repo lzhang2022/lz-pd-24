@@ -15,9 +15,8 @@ Outputs:
 Logging statements are used for debugging and monitoring purposes.
 """
 
-from pyspark.sql import DataFrame, SparkSession
 import pyspark.sql.functions as f
-
+from pyspark.sql import DataFrame, SparkSession
 # import logging
 from pyspark.sql.window import Window
 

@@ -5,9 +5,10 @@ CI process, such as when opening a pull request.
 """
 
 import pytest
-from nd_feb2024.pipeline import valid_user_id
 from pyspark.sql import SparkSession
 from pyspark.sql import types as t
+
+from nd_feb2024.pipeline import valid_user_id
 
 
 @pytest.fixture(scope="session", name="spark", autouse=True)
@@ -46,5 +47,6 @@ def _dummy_df(spark, test_df_schema):
 def test_valid_id_pass(df_valid):
     filter_df = df_valid.filter(valid_user_id())
     assert df_valid == filter_df
+
 
 # TODO: add more tests
