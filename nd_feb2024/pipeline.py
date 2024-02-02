@@ -1,25 +1,28 @@
 """
 Main pipeline entry point.
 
-Input:
+Inputs:
     Raw data sources:
     movies.dat
     ratings.dat
     users.dat
 
-Output:
-    movies_ratings: data containing the max, min, average ratings for each movie
-    user_movies: data containing top 3 films for each user
+Outputs:
+    raw_movies.csv:
+    transform_movies.csv: data containing the max, min, average ratings for each movie
+    transform_users.csv: data containing top 3 films for each user
 
 Logging statements are used for debugging and monitoring purposes.
 """
 
 from pyspark.sql import DataFrame, SparkSession
 import pyspark.sql.functions as f
-import logging
+
+# import logging
 from pyspark.sql.window import Window
 
-LOG = logging.getLogger()
+# TODO: configure logging for spark session
+# LOG = logging.getLogger()
 SPARK = SparkSession.builder.getOrCreate()
 RAW_DATA_DIRECTORY = "data/raw/"
 OUTPUT_DATA_DIRECTORY = "data/output"
@@ -141,9 +144,6 @@ def transform_movies_ratings(
         f.avg("rating").alias("avg_rating"),
     )
 
-    # print("this is the ratings_df after agg")
-    # ratings_df.limit(10).show()
-
     transform_df = preprocess_movies_df.join(ratings_df, on=["movie_id"], how="left")
 
     print(f"transform_movie_ratings has {transform_df.count()} rows")
@@ -181,9 +181,6 @@ def transform_user_ratings(
         )
     )
 
-    # print("top movies are")
-    # top_movies_df.show()
-
     # join data together
     transform_df = (
         top_movies_df.join(preprocess_users_df, on=["user_id"], how="left").join(
@@ -216,14 +213,14 @@ def export_dataframe(
 ) -> None:
     """
     Exports the dataframe to a csv file in the destination folder. Using csv format
-    so that it can easily be viewed. Otherwise using something like parquet would be
-    faster
+    so that it can easily be viewed for this homework task only.
+    If storing somewhere like s3 then parquet may be more appropriate as files are
+    immutable.
     """
     full_file_path = f"{destination}/{file_name}.csv"
 
-    # using pandas for simplicity
-    pandas_df = df.toPandas()
-    pandas_df.to_csv(full_file_path, header=True, index=False)
+    # .coalesce(1) to keep dataframe output in one partition, and one file
+    (df.coalesce(1).write.mode("overwrite").csv(full_file_path, header=True))
 
     # LOG.info(f"{df.count()} rows outputted to file {full_file_path}.csv")
     print(f"{df.count()} rows outputted to file {full_file_path}")
@@ -236,36 +233,19 @@ def main():
 
     # ingest raw data
     raw_movies_df = ingest_raw_data(data_source="movies")
-    # print("raw_movies_df is")
-    # raw_movies_df.limit(5).show()
-    # print(raw_movies_df.schema)
-
     raw_ratings_df = ingest_raw_data(data_source="ratings")
-    # print("raw ratings_df is")
-    # raw_ratings_df.limit(5).show()
-    # print(raw_ratings_df.schema)
-
     raw_users_df = ingest_raw_data(data_source="users")
-    # raw_users_df.limit(5).show()
-    # print(raw_users_df.schema)
 
     # preprocess data
     preprocess_movies_df = preprocess_movie_data(raw_movies_df=raw_movies_df)
-    # preprocess_movies_df.limit(10).show()
-
     preprocess_ratings_df = preprocess_ratings_data(raw_ratings_df=raw_ratings_df)
-    # preprocess_ratings_df.limit(10).show()
-
     preprocess_users_df = preprocess_users_data(raw_users_df=raw_users_df)
-    preprocess_users_df.limit(10).show()
 
     # transform movies new dataframe
     transform_movies_df = transform_movies_ratings(
         preprocess_movies_df=preprocess_movies_df,
         preprocess_ratings_df=preprocess_ratings_df,
     )
-    # transform_movies_df.limit(15).show()
-    # print(transform_movies_df.schema)
 
     # transform users new dataframe
     transform_users_df = transform_user_ratings(

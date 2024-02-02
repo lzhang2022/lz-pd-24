@@ -1,7 +1,10 @@
 #!/bin/bash
 
-#find / -name "spark-submit" -type f 2>/dev/null
+# install requirements
+pip install -r requirements.txt
 
+#find / -name "spark-submit" -type f 2>/dev/null
+# use this command above to find the location for ./path/to/spark/bin/spark-submit
 
 # Run spark-submit
 #./path/to/spark/bin/spark-submit \
