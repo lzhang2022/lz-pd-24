@@ -282,4 +282,5 @@ def main():
     export_dataframe(df=transform_users_df, file_name="transform_users")
 
 
-main()
+if __name__ == "__main__":
+    main()
