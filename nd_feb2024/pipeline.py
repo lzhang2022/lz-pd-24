@@ -8,11 +8,13 @@ Inputs:
     users.dat
 
 Outputs:
-    raw_movies.csv:
+    raw_movies.csv: raw data from movies.dat
+    raw_ratings.csv: raw data from ratings.dat
+    raw_users.csv: raw data from users.dat
     transform_movies.csv: data containing the max, min, average ratings for each movie
     transform_users.csv: data containing top 3 films for each user
 
-Logging statements are used for debugging and monitoring purposes.
+Logging and print statements are used for debugging and monitoring purposes.
 """
 
 import pyspark.sql.functions as f
